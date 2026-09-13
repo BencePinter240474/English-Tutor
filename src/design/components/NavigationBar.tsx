@@ -26,54 +26,62 @@ export interface NavigationBarProps {
 }
 
 export function NavigationBar({ title, large = false, onBack, backLabel = 'Back', trailing }: NavigationBarProps) {
+  // A large title screen carries its title in the content, so the bar above it
+  // holds nothing unless there is a back button or an action. An empty blurred
+  // strip is just a band of chrome, so in that case there is no bar at all.
+  const showBar = !large || Boolean(onBack) || Boolean(trailing);
+
   return (
     <>
-      <div style={{
-        position: 'sticky', top: 0, zIndex: 10,
-        background: 'var(--material-bar)',
-        backdropFilter: 'saturate(180%) blur(20px)',
-        WebkitBackdropFilter: 'saturate(180%) blur(20px)',
-        borderBottom: 'var(--hairline) solid var(--separator)',
-      }}>
+      {showBar && (
         <div style={{
-          ...COLUMN, minHeight: 'var(--bar-height)',
-          display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
-          padding: '0 var(--space-3)',
+          position: 'sticky', top: 0, zIndex: 10,
+          background: 'var(--material-bar)',
+          backdropFilter: 'saturate(180%) blur(20px)',
+          WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+          borderBottom: 'var(--hairline) solid var(--separator)',
         }}>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', minWidth: 0 }}>
-            {onBack && (
-              <button
-                type="button" onClick={onBack}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 2,
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--tint)', font: 'var(--text-body)',
-                  letterSpacing: 'var(--tracking-body)', padding: '6px 4px',
-                }}
-              >
-                <Icon name="chevron-left" size={17} weight={2.5} />
-                {backLabel}
-              </button>
+          <div style={{
+            ...COLUMN, minHeight: 'var(--bar-height)',
+            display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+            padding: '0 var(--space-3)',
+          }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', minWidth: 0 }}>
+              {onBack && (
+                <button
+                  type="button" onClick={onBack}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 2,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'var(--tint)', font: 'var(--text-body)',
+                    letterSpacing: 'var(--tracking-body)', padding: '6px 4px',
+                  }}
+                >
+                  <Icon name="chevron-left" size={17} weight={2.5} />
+                  {backLabel}
+                </button>
+              )}
+            </div>
+            {!large && (
+              <div style={{
+                font: 'var(--text-headline)', letterSpacing: 'var(--tracking-headline)',
+                color: 'var(--label)', whiteSpace: 'nowrap', overflow: 'hidden',
+                textOverflow: 'ellipsis', maxWidth: '55%',
+              }}>{title}</div>
             )}
-          </div>
-          {!large && (
-            <div style={{
-              font: 'var(--text-headline)', letterSpacing: 'var(--tracking-headline)',
-              color: 'var(--label)', whiteSpace: 'nowrap', overflow: 'hidden',
-              textOverflow: 'ellipsis', maxWidth: '55%',
-            }}>{title}</div>
-          )}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 'var(--space-2)' }}>
-            {trailing}
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 'var(--space-2)' }}>
+              {trailing}
+            </div>
           </div>
         </div>
-      </div>
+      )}
       {large && (
         <div style={COLUMN}>
           <h1 style={{
             font: 'var(--text-large-title)', letterSpacing: 'var(--tracking-large-title)',
             color: 'var(--label)',
-            padding: 'var(--space-4) var(--screen-inset) var(--space-2)',
+            // Sits higher up the screen when there is no bar above it.
+            padding: (showBar ? 'var(--space-4)' : 'var(--space-6)') + ' var(--screen-inset) var(--space-2)',
           }}>{title}</h1>
         </div>
       )}
