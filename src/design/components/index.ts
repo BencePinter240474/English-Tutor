@@ -1,23 +1,30 @@
-/* elho design system components, internal mode.
-   Pulled from the elho Design System project and typed for this app.
-   Source of truth: claude.ai/design, project "elho Design System". */
+/* Apple design system components.
+
+   Built for this app from Apple's published Human Interface Guidelines:
+   the system colour palette and its semantic names, the eleven text styles,
+   the 4pt grid, inset grouped lists, and the standard controls.
+
+   Nothing proprietary is redistributed. San Francisco is referenced through
+   the system font stack, so it resolves to the real face on Apple hardware
+   and to the host's UI face elsewhere, and the icons are a small hand-drawn
+   set in the SF Symbols idiom rather than SF Symbols themselves. */
+export { Icon } from './Icon';
+export type { IconName, IconProps } from './Icon';
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
+export { ListSection, ListRow } from './List';
+export type { ListSectionProps, ListRowProps } from './List';
+export { NavigationBar } from './NavigationBar';
+export type { NavigationBarProps } from './NavigationBar';
+export { TabBar } from './TabBar';
+export type { TabBarProps, TabItem } from './TabBar';
+export { SegmentedControl } from './SegmentedControl';
+export type { Segment, SegmentedControlProps } from './SegmentedControl';
 export { Badge } from './Badge';
 export type { BadgeProps } from './Badge';
-export { Tag } from './Tag';
-export type { TagProps } from './Tag';
+export { TextField } from './TextField';
+export type { TextFieldProps } from './TextField';
 export { Card } from './Card';
 export type { CardProps } from './Card';
-export { Field } from './Field';
-export type { FieldProps } from './Field';
-export { Input } from './Input';
-export type { InputProps } from './Input';
-export { Select } from './Select';
-export type { SelectOption, SelectProps } from './Select';
-export { ChoiceChip } from './ChoiceChip';
-export type { ChoiceChipProps } from './ChoiceChip';
-export { Tabs } from './Tabs';
-export type { TabItem, TabsProps } from './Tabs';
-export { SectionHeading } from './SectionHeading';
-export type { SectionHeadingProps } from './SectionHeading';
+export { ProgressBar } from './ProgressBar';
+export type { ProgressBarProps } from './ProgressBar';

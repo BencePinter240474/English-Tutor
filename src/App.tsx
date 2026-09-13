@@ -1,8 +1,9 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from './components/AppShell';
 import { PacksProvider } from './lib/packs';
-import { Home } from './pages/Home';
-import { Packs } from './pages/Packs';
+import { Practise } from './pages/Practise';
+import { Library } from './pages/Library';
+import { Progress } from './pages/Progress';
 import { Flashcards } from './exercises/Flashcards';
 import { Matching } from './exercises/Matching';
 import { Grammar } from './exercises/Grammar';
@@ -12,8 +13,8 @@ import { Reading } from './exercises/Reading';
 
    GitHub Pages serves static files and has no rewrite rule, so a deep link
    like /flashcards would 404 on a hard refresh under history routing. The
-   hash keeps every route in one document, which is exactly what a static
-   host can serve. */
+   hash keeps every route in one document, which is what a static host can
+   actually serve. */
 
 export function App() {
   return (
@@ -21,12 +22,13 @@ export function App() {
       <HashRouter>
         <Routes>
           <Route element={<AppShell />}>
-            <Route index element={<Home />} />
+            <Route index element={<Practise />} />
             <Route path="flashcards" element={<Flashcards />} />
             <Route path="matching" element={<Matching />} />
             <Route path="grammar" element={<Grammar />} />
             <Route path="reading" element={<Reading />} />
-            <Route path="packs" element={<Packs />} />
+            <Route path="library" element={<Library />} />
+            <Route path="progress" element={<Progress />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

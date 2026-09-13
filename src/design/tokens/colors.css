@@ -1,82 +1,163 @@
-/* elho palette, brand guide pp42-47. THIRTEEN colours: three primary plus ten
-   accents. Nothing outside this list is a brand colour.
+/* Apple system colours.
 
-   Copied from the elho Design System project (tokens/colors.css). Internal
-   mode only, which is what an internal app like this one uses. */
+   The semantic names are the contract: a component asks for --label or
+   --fill-secondary, never for a hex value. That is what makes light and dark
+   a single definition swap rather than a second stylesheet.
 
-:root{
-  /* Primary palette (p42). Graphite replaces pure black on screen. */
-  --white:#FFFFFF;
-  --linen:#F0ECDF;
-  --graphite:#312D2B;
-  --black:#000000;
+   Apple's semantic greys are deliberately translucent (rgba over the
+   background) rather than opaque. Layered over a white or black ground they
+   land on the familiar values, and over a tinted ground they stay correct,
+   which an opaque grey would not. */
 
-  /* Accent palette (p43). Ten curated colours. */
-  --bark:#5C514A;
-  --rose:#E1C8BA;
-  --leaf:#657500;
-  --lime:#ECF2C9;
-  --terra:#D64712;
-  --sunflower:#F3C44E;
-  --aubergine:#5A3E58;
-  --lilac:#D7CAE2;
-  --water:#0F538A;
-  --pebble:#8EAAA3;
+:root {
+  /* Vibrant system colours, light appearance. */
+  --blue: #007AFF;
+  --green: #34C759;
+  --indigo: #5856D6;
+  --orange: #FF9500;
+  --pink: #FF2D55;
+  --purple: #AF52DE;
+  --red: #FF3B30;
+  --teal: #30B0C7;
+  --yellow: #FFCC00;
 
-  /* Internal mode uses SEVEN of the thirteen: White, Linen, Graphite, Leaf,
-     Lime, Pebble, Bark. Rose, Terra, Sunflower, Aubergine, Lilac and Water are
-     marketing-only and must not appear in this app.
+  --gray: #8E8E93;
+  --gray-2: #AEAEB2;
+  --gray-3: #C7C7CC;
+  --gray-4: #D1D1D6;
+  --gray-5: #E5E5EA;
+  --gray-6: #F2F2F7;
 
-     Emphasis is carried by VALUE, not hue, on a four-step ladder:
-     Graphite, Leaf, Pebble, Lime. Text is Graphite or white only. */
+  /* Text. Four levels of emphasis, and nothing below quaternary. */
+  --label: rgba(0, 0, 0, 1);
+  --label-secondary: rgba(60, 60, 67, 0.6);
+  --label-tertiary: rgba(60, 60, 67, 0.3);
+  --label-quaternary: rgba(60, 60, 67, 0.18);
+  --label-inverted: rgba(255, 255, 255, 1);
 
-  --text-body:var(--graphite);
-  --text-heading:var(--graphite);
-  --text-muted:var(--bark);
-  --text-on-dark:var(--white);
-  --text-link:var(--graphite);
-  --text-link-hover:var(--graphite);
-  --text-stat:var(--graphite);
-  --text-error:var(--graphite);
-  --text-print:var(--black);
+  /* Backgrounds. The grouped set is for screens built from inset lists,
+     where the page is grey and the content sits on white cards. */
+  --bg: #FFFFFF;
+  --bg-secondary: #F2F2F7;
+  --bg-tertiary: #FFFFFF;
+  --bg-grouped: #F2F2F7;
+  --bg-grouped-secondary: #FFFFFF;
+  --bg-grouped-tertiary: #F2F2F7;
 
-  --surface-page:var(--white);
-  --surface-card:var(--white);
-  --surface-pale:var(--linen);
-  --surface-sunken:var(--linen);
-  --surface-band:var(--linen);
-  --surface-field:var(--linen);
-  --surface-field-focus:var(--lime);
-  --surface-header:var(--graphite);
-  --surface-inverse:var(--graphite);
+  /* Fills, for shapes behind content: segmented controls, chips, wells. */
+  --fill: rgba(120, 120, 128, 0.2);
+  --fill-secondary: rgba(120, 120, 128, 0.16);
+  --fill-tertiary: rgba(118, 118, 128, 0.12);
+  --fill-quaternary: rgba(116, 116, 128, 0.08);
 
-  /* The palette has no tint ramps, so hover and press step to Graphite. */
-  --fill-action:var(--leaf);
-  --fill-action-hover:var(--graphite);
-  --fill-action-ink:var(--white);
-  --fill-emphasis:var(--pebble);
-  --fill-emphasis-ink:var(--graphite);
+  --separator: rgba(60, 60, 67, 0.29);
+  --separator-opaque: #C6C6C8;
 
-  --border-hairline:var(--linen);
-  --border-strong:var(--pebble);
-  --border-pale:var(--pebble);
-  --border-accent:var(--leaf);
-  --rule-heading:var(--leaf);
+  /* Materials. A bar sits over scrolling content and blurs it. */
+  --material-bar: rgba(249, 249, 249, 0.82);
+  --material-thick: rgba(255, 255, 255, 0.9);
 
-  /* Status, ranked by value rather than hue. The WORD carries the meaning:
-     a badge says "Correct" or "Not yet", never relies on being green or red. */
-  --status-positive:var(--leaf);
-  --status-positive-ink:var(--white);
-  --status-positive-bg:var(--lime);
-  --status-caution:var(--bark);
-  --status-caution-ink:var(--graphite);
-  --status-caution-bg:var(--linen);
-  --status-negative:var(--graphite);
-  --status-negative-ink:var(--white);
-  --status-negative-bg:var(--linen);
-  --status-neutral:var(--pebble);
-  --status-neutral-ink:var(--graphite);
-  --status-neutral-bg:var(--linen);
-  --status-info:var(--lime);
-  --status-info-ink:var(--graphite);
+  --tint: var(--blue);
+  --tint-on: #FFFFFF;
+
+  color-scheme: light dark;
+}
+
+/* Dark appearance.
+
+   Only the tokens change; no component knows which appearance is showing.
+
+   The block is written twice on purpose. The first copy follows the system
+   setting, unless the reader has explicitly chosen light. The second wins
+   when the reader has explicitly chosen dark on a system set to light. CSS
+   has no way to give one declaration block two such different conditions, so
+   the duplication is the cost of honouring both the system and a manual
+   override. Keep the two copies identical. */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-appearance="light"]) {
+    --blue: #0A84FF;
+    --green: #30D158;
+    --indigo: #5E5CE6;
+    --orange: #FF9F0A;
+    --pink: #FF375F;
+    --purple: #BF5AF2;
+    --red: #FF453A;
+    --teal: #40C8E0;
+    --yellow: #FFD60A;
+
+    --gray: #8E8E93;
+    --gray-2: #636366;
+    --gray-3: #48484A;
+    --gray-4: #3A3A3C;
+    --gray-5: #2C2C2E;
+    --gray-6: #1C1C1E;
+
+    --label: rgba(255, 255, 255, 1);
+    --label-secondary: rgba(235, 235, 245, 0.6);
+    --label-tertiary: rgba(235, 235, 245, 0.3);
+    --label-quaternary: rgba(235, 235, 245, 0.18);
+    --label-inverted: rgba(0, 0, 0, 1);
+
+    --bg: #000000;
+    --bg-secondary: #1C1C1E;
+    --bg-tertiary: #2C2C2E;
+    --bg-grouped: #000000;
+    --bg-grouped-secondary: #1C1C1E;
+    --bg-grouped-tertiary: #2C2C2E;
+
+    --fill: rgba(120, 120, 128, 0.36);
+    --fill-secondary: rgba(120, 120, 128, 0.32);
+    --fill-tertiary: rgba(118, 118, 128, 0.24);
+    --fill-quaternary: rgba(118, 118, 128, 0.18);
+
+    --separator: rgba(84, 84, 88, 0.65);
+    --separator-opaque: #38383A;
+
+    --material-bar: rgba(30, 30, 30, 0.8);
+    --material-thick: rgba(37, 37, 37, 0.9);
+  }
+}
+
+:root[data-appearance="dark"] {
+  --blue: #0A84FF;
+  --green: #30D158;
+  --indigo: #5E5CE6;
+  --orange: #FF9F0A;
+  --pink: #FF375F;
+  --purple: #BF5AF2;
+  --red: #FF453A;
+  --teal: #40C8E0;
+  --yellow: #FFD60A;
+
+  --gray: #8E8E93;
+  --gray-2: #636366;
+  --gray-3: #48484A;
+  --gray-4: #3A3A3C;
+  --gray-5: #2C2C2E;
+  --gray-6: #1C1C1E;
+
+  --label: rgba(255, 255, 255, 1);
+  --label-secondary: rgba(235, 235, 245, 0.6);
+  --label-tertiary: rgba(235, 235, 245, 0.3);
+  --label-quaternary: rgba(235, 235, 245, 0.18);
+  --label-inverted: rgba(0, 0, 0, 1);
+
+  --bg: #000000;
+  --bg-secondary: #1C1C1E;
+  --bg-tertiary: #2C2C2E;
+  --bg-grouped: #000000;
+  --bg-grouped-secondary: #1C1C1E;
+  --bg-grouped-tertiary: #2C2C2E;
+
+  --fill: rgba(120, 120, 128, 0.36);
+  --fill-secondary: rgba(120, 120, 128, 0.32);
+  --fill-tertiary: rgba(118, 118, 128, 0.24);
+  --fill-quaternary: rgba(118, 118, 128, 0.18);
+
+  --separator: rgba(84, 84, 88, 0.65);
+  --separator-opaque: #38383A;
+
+  --material-bar: rgba(30, 30, 30, 0.8);
+  --material-thick: rgba(37, 37, 37, 0.9);
 }

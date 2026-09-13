@@ -1,8 +1,10 @@
 import React from 'react';
-import { Badge, Button, Card, ChoiceChip, SectionHeading } from '../design/components';
+import { Badge, Button, Card, Icon, ListRow, ListSection, ProgressBar } from '../design/components';
 import { CsvUpload } from '../components/CsvUpload';
 import { PackPicker } from '../components/PackPicker';
 import { ScoreSummary } from '../components/ScoreSummary';
+import { Screen } from '../components/Screen';
+import { AnswerOption } from '../components/AnswerOption';
 import { usePacks } from '../lib/packs';
 import { recordRun } from '../lib/storage';
 import type { ReadingPassage } from '../lib/types';
@@ -10,11 +12,9 @@ import type { ReadingPassage } from '../lib/types';
 /* Reading and comprehension.
 
    The passage stays on the page while the questions are answered, because
-   comprehension is about going back to the text, not about remembering it.
-   Prose is capped at 68ch, which is the elho measure for reading.
-
-   Each question is marked as it is answered, and the round closes when every
-   question has been tried. */
+   comprehension is about going back to the text, not remembering it. Prose
+   is capped at a comfortable measure and set at body size with generous
+   leading, which is what makes a long passage readable on a phone. */
 
 export function Reading() {
   const { reading } = usePacks();
@@ -51,7 +51,8 @@ export function Reading() {
   const score = passage
     ? passage.questions.filter(q => answers[q.id]?.toLowerCase() === q.answer.toLowerCase()).length
     : 0;
-  const answeredAll = passage != null && passage.questions.every(q => answers[q.id] != null);
+  const answered = passage ? passage.questions.filter(q => answers[q.id] != null).length : 0;
+  const answeredAll = passage != null && answered === passage.questions.length;
 
   const finish = () => {
     if (!passage) return;
@@ -60,113 +61,110 @@ export function Reading() {
   };
 
   return (
-    <div>
-      <SectionHeading
-        eyebrow="Reading"
-        note="Read the text, then answer the questions. The text stays on screen while you work."
-      >Reading and comprehension</SectionHeading>
-
+    <Screen
+      title={passage ? passage.title : 'Reading'}
+      backTo={passage ? undefined : '/'}
+      onBack={passage ? () => setPassage(null) : undefined}
+      backLabel={passage ? 'Texts' : 'Practise'}
+    >
       {!passage && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', marginTop: 'var(--space-5)' }}>
-          <PackPicker packs={reading} selected={selectedPacks} onChange={setSelectedPacks} itemNoun="texts" />
+        <>
+          <PackPicker
+            packs={reading} selected={selectedPacks} onChange={setSelectedPacks}
+            itemNoun="texts"
+          />
 
           {passages.length === 0 ? (
-            <p style={{ font: 'var(--type-small)', color: 'var(--bark)' }}>
-              Choose at least one pack, or upload a CSV below.
+            <p style={{ font: 'var(--text-subheadline)', color: 'var(--label-secondary)', textAlign: 'center', padding: 'var(--space-6) 0' }}>
+              Choose at least one pack, or add a CSV below.
             </p>
           ) : (
-            <div style={{ display: 'grid', gap: 'var(--space-3)', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
+            <ListSection header="Texts" footer="Each text has a few comprehension questions.">
               {passages.map(p => (
-                <Card
+                <ListRow
                   key={p.id}
-                  eyebrow={p.level ? 'Level ' + p.level : undefined}
                   title={p.title}
-                  footnote={p.questions.length + (p.questions.length === 1 ? ' question' : ' questions')}
-                >
-                  <p style={{ font: 'var(--type-caption)', color: 'var(--bark)' }}>
-                    {p.text.length > 120 ? p.text.slice(0, 120).trimEnd() + '...' : p.text}
-                  </p>
-                  <div style={{ marginTop: 'var(--space-4)' }}>
-                    <Button size="sm" onClick={() => open(p)}>Read this</Button>
-                  </div>
-                </Card>
+                  subtitle={(p.level ? 'Level ' + p.level + ', ' : '')
+                    + p.questions.length + (p.questions.length === 1 ? ' question' : ' questions')}
+                  symbol={<Icon name="book" size={17} weight={2} />}
+                  symbolColor="var(--green)"
+                  accessory="chevron"
+                  onClick={() => open(p)}
+                />
               ))}
-            </div>
+            </ListSection>
           )}
-        </div>
+
+          <div style={{ marginTop: 'var(--space-7)' }}>
+            <CsvUpload kind="reading" label="Add your own texts" />
+          </div>
+        </>
       )}
 
       {passage && (
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            marginBottom: 'var(--space-4)', font: 'var(--type-caption)', color: 'var(--bark)',
-          }}>
-            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {Object.keys(answers).length} of {passage.questions.length} answered
-            </span>
-            <Button variant="ghost" size="sm" onClick={() => setPassage(null)}>Back to the texts</Button>
-          </div>
-
-          <article style={{
-            background: 'var(--surface-pale)', border: '1px solid var(--border-pale)',
-            padding: 'var(--space-6)', maxWidth: 'var(--measure-prose)', marginBottom: 'var(--space-7)',
-          }}>
-            <h2 style={{ font: 'var(--type-h2)', letterSpacing: 'var(--tracking-lg)', marginBottom: 'var(--space-4)' }}>
+        <>
+          <Card padding="roomy" style={{ marginBottom: 'var(--space-7)' }}>
+            {passage.level && (
+              <div style={{ marginBottom: 'var(--space-3)' }}>
+                <Badge tone="info">Level {passage.level}</Badge>
+              </div>
+            )}
+            <h2 style={{ font: 'var(--text-title-2)', letterSpacing: 'var(--tracking-title-2)', marginBottom: 'var(--space-4)' }}>
               {passage.title}
             </h2>
-            {passage.text.split(/\n+/).map((para, i) => (
-              <p key={i} style={{ font: 'var(--type-body)', marginBottom: 'var(--space-3)' }}>{para}</p>
-            ))}
-          </article>
+            <div style={{ maxWidth: 'var(--reading-width)' }}>
+              {passage.text.split(/\n+/).map((para, i) => (
+                <p key={i} style={{
+                  font: 'var(--text-body)', letterSpacing: 'var(--tracking-body)',
+                  lineHeight: 1.55, marginBottom: 'var(--space-3)',
+                }}>{para}</p>
+              ))}
+            </div>
+          </Card>
 
-          <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-7)' }}>
+          <div style={{ marginBottom: 'var(--space-5)' }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between',
+              font: 'var(--text-footnote)', color: 'var(--label-secondary)',
+              letterSpacing: 'var(--tracking-footnote)', marginBottom: 6,
+              fontVariantNumeric: 'tabular-nums',
+            }}>
+              <span>{answered} of {passage.questions.length} answered</span>
+              <span>{score} right</span>
+            </div>
+            <ProgressBar value={answered} max={passage.questions.length} />
+          </div>
+
+          <ol style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-7)' }}>
             {passage.questions.map((q, qi) => {
-              const chosen = answers[q.id];
+              const chosen = answers[q.id] ?? null;
               const right = chosen != null && chosen.toLowerCase() === q.answer.toLowerCase();
               return (
                 <li key={q.id}>
-                  <p style={{
-                    font: 'var(--weight-medium) var(--size-h6)/var(--leading-normal) var(--font-core)',
-                    marginBottom: 'var(--space-3)', maxWidth: 'var(--measure-prose)',
+                  <h3 style={{
+                    font: 'var(--text-headline)', letterSpacing: 'var(--tracking-headline)',
+                    marginBottom: 'var(--space-3)', display: 'flex', gap: 'var(--space-2)',
                   }}>
-                    <span style={{ color: 'var(--bark)', marginRight: 'var(--space-2)', fontVariantNumeric: 'tabular-nums' }}>
-                      {qi + 1}.
-                    </span>
-                    {q.question}
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', maxWidth: 520 }}>
-                    {q.options.map(option => {
-                      const isAnswer = option.toLowerCase() === q.answer.toLowerCase();
-                      const isChosen = chosen === option;
-                      return (
-                        <ChoiceChip
-                          key={option}
-                          selected={chosen ? isAnswer : false}
-                          onToggle={() => choose(q.id, option)}
-                          style={{ ...(chosen ? { cursor: 'default' } : null), ...(chosen && isAnswer ? { background: 'var(--leaf)', color: 'var(--white)' } : null), ...(chosen && isChosen && !isAnswer
-                            ? { border: '2px solid var(--graphite)', background: 'var(--linen)', color: 'var(--graphite)' }
-                            : null) }}
-                        >
-                          {option}
-                          {chosen && isChosen && !isAnswer && (
-                            <span style={{ font: 'var(--type-caption)', color: 'var(--bark)', marginLeft: 8 }}>your answer</span>
-                          )}
-                        </ChoiceChip>
-                      );
-                    })}
+                    <span style={{ color: 'var(--label-tertiary)', fontVariantNumeric: 'tabular-nums' }}>{qi + 1}</span>
+                    <span>{q.question}</span>
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                    {q.options.map(option => (
+                      <AnswerOption
+                        key={option} option={option} chosen={chosen}
+                        answer={q.answer} onChoose={opt => choose(q.id, opt)}
+                      />
+                    ))}
                   </div>
                   {chosen && (
-                    <div style={{
-                      marginTop: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)',
-                      borderLeft: 'var(--border-width-accent) solid ' + (right ? 'var(--leaf)' : 'var(--graphite)'),
-                      background: 'var(--surface-pale)', maxWidth: 'var(--measure-prose)',
-                    }}>
-                      <Badge tone={right ? 'positive' : 'negative'}>{right ? 'Correct' : 'Not this time'}</Badge>
-                      <p style={{ font: 'var(--type-small)', marginTop: 'var(--space-2)' }}>
-                        {q.explanation ?? ('The answer is "' + q.answer + '".')}
+                    <Card padding="compact" style={{ marginTop: 'var(--space-3)' }}>
+                      <Badge tone={right ? 'positive' : 'negative'} solid>
+                        {right ? 'Correct' : 'Not this time'}
+                      </Badge>
+                      <p style={{ font: 'var(--text-footnote)', marginTop: 'var(--space-2)', letterSpacing: 'var(--tracking-footnote)' }}>
+                        {q.explanation ?? 'The answer is "' + q.answer + '".'}
                       </p>
-                    </div>
+                    </Card>
                   )}
                 </li>
               );
@@ -175,7 +173,7 @@ export function Reading() {
 
           {!finished && (
             <div style={{ marginTop: 'var(--space-7)' }}>
-              <Button onClick={finish} disabled={!answeredAll}>
+              <Button block size="large" onClick={finish} disabled={!answeredAll}>
                 {answeredAll ? 'Finish this text' : 'Answer every question to finish'}
               </Button>
             </div>
@@ -191,10 +189,9 @@ export function Reading() {
               />
             </div>
           )}
-        </div>
+        </>
       )}
-
-      <CsvUpload kind="reading" label="Add your own texts" />
-    </div>
+    </Screen>
   );
 }
+

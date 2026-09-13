@@ -1,41 +1,35 @@
-import { ChoiceChip } from '../design/components';
+import { ListRow, ListSection } from '../design/components';
 import type { Pack } from '../lib/types';
 
-/* Which packs feed this round. Multi-select, because the point of uploading
-   a new list is being able to practise it next to the old one. */
+/* Which packs feed this round. Multi-select the iOS way: rows in a grouped
+   list, each with a checkmark when it is in. The last one in cannot be
+   removed, because a round with nothing to draw from is not a round. */
 
 interface Props {
   packs: Pack[];
   selected: string[];
   onChange: (ids: string[]) => void;
   itemNoun: string;
+  footer?: string;
 }
 
-export function PackPicker({ packs, selected, onChange, itemNoun }: Props) {
-  const toggle = (id: string, next: boolean) => {
-    const ids = next ? [...selected, id] : selected.filter(s => s !== id);
-    // Never leave the round with nothing to draw from.
-    onChange(ids.length === 0 ? selected : ids);
+export function PackPicker({ packs, selected, onChange, itemNoun, footer }: Props) {
+  const toggle = (id: string) => {
+    const next = selected.includes(id) ? selected.filter(s => s !== id) : [...selected, id];
+    if (next.length > 0) onChange(next);
   };
+
   return (
-    <div>
-      <p style={{ font: 'var(--type-label)', color: 'var(--bark)', marginBottom: 'var(--space-2)' }}>
-        Packs in this round
-      </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-        {packs.map(p => (
-          <ChoiceChip
-            key={p.id}
-            selected={selected.includes(p.id)}
-            onToggle={next => toggle(p.id, next)}
-          >
-            {p.name}
-            <span style={{ font: 'var(--type-caption)', opacity: 0.8, marginLeft: 8 }}>
-              {p.items.length} {itemNoun}
-            </span>
-          </ChoiceChip>
-        ))}
-      </div>
-    </div>
+    <ListSection header="Packs in this round" footer={footer}>
+      {packs.map(pack => (
+        <ListRow
+          key={pack.id}
+          title={pack.name}
+          subtitle={pack.items.length + ' ' + itemNoun}
+          accessory={selected.includes(pack.id) ? 'checkmark' : 'none'}
+          onClick={() => toggle(pack.id)}
+        />
+      ))}
+    </ListSection>
   );
 }

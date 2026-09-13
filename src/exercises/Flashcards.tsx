@@ -1,8 +1,9 @@
 import React from 'react';
-import { Badge, Button, ChoiceChip, SectionHeading } from '../design/components';
+import { Badge, Button, ProgressBar, SegmentedControl } from '../design/components';
 import { CsvUpload } from '../components/CsvUpload';
 import { PackPicker } from '../components/PackPicker';
 import { ScoreSummary } from '../components/ScoreSummary';
+import { Screen } from '../components/Screen';
 import { usePacks } from '../lib/packs';
 import { recordRun } from '../lib/storage';
 import { shuffle } from '../lib/shuffle';
@@ -15,16 +16,22 @@ import type { VocabItem } from '../lib/types';
    only finished when every card has been recalled once. The score counts
    cards known first time, which is the honest measure.
 
-   There is no 3D flip. elho motion allows fades and height reveals only, so
-   the card simply swaps faces on a colour transition. */
+   The card turns over in three dimensions on a spring. Both faces are always
+   in the DOM, rotated apart and hidden from the back, so the text is present
+   for a screen reader and the turn costs nothing to animate. */
 
-const ROUND_SIZES = [10, 20, 40, 0] as const;
+const ROUND_SIZES = [
+  { value: '10', label: '10' },
+  { value: '20', label: '20' },
+  { value: '40', label: '40' },
+  { value: '0', label: 'All' },
+];
 
 export function Flashcards() {
   const { vocab } = usePacks();
   const [selectedPacks, setSelectedPacks] = React.useState<string[]>(() => vocab.map(p => p.id));
-  const [direction, setDirection] = React.useState<'hu-en' | 'en-hu'>('hu-en');
-  const [roundSize, setRoundSize] = React.useState<number>(20);
+  const [direction, setDirection] = React.useState('hu-en');
+  const [roundSize, setRoundSize] = React.useState('20');
 
   const [queue, setQueue] = React.useState<VocabItem[] | null>(null);
   const [flipped, setFlipped] = React.useState(false);
@@ -47,7 +54,8 @@ export function Flashcards() {
   );
 
   const start = React.useCallback(() => {
-    const round = roundSize > 0 ? shuffle(pool).slice(0, roundSize) : shuffle(pool);
+    const size = Number(roundSize);
+    const round = size > 0 ? shuffle(pool).slice(0, size) : shuffle(pool);
     setQueue(round);
     setRoundTotal(round.length);
     setMissed(new Set());
@@ -72,7 +80,8 @@ export function Flashcards() {
     }
   }, [queue, missed, roundTotal]);
 
-  // Space flips, then Enter or the right arrow keeps it, the left arrow repeats it.
+  // Space turns the card, then Enter or the right arrow keeps it and the
+  // left arrow sends it back into the queue.
   React.useEffect(() => {
     if (!queue || finished) return;
     const onKey = (e: KeyboardEvent) => {
@@ -88,124 +97,162 @@ export function Flashcards() {
   }, [queue, flipped, finished, answer]);
 
   const card = queue?.[0];
-  const front = card ? (direction === 'hu-en' ? card.hungarian : card.english) : '';
-  const back = card ? (direction === 'hu-en' ? card.english : card.hungarian) : '';
+  const huFirst = direction === 'hu-en';
+  const front = card ? (huFirst ? card.hungarian : card.english) : '';
+  const back = card ? (huFirst ? card.english : card.hungarian) : '';
+  const done = roundTotal - (queue?.length ?? 0);
+
+  const face: React.CSSProperties = {
+    position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+    alignItems: 'center', justifyContent: 'center', gap: 'var(--space-3)',
+    padding: 'var(--space-6)', textAlign: 'center',
+    borderRadius: 'var(--radius-large)',
+    backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+  };
 
   return (
-    <div>
-      <SectionHeading
-        eyebrow="Vocabulary"
-        note="One side shows the word, the other the translation. Cards you do not know come back at the end of the round."
-      >Flashcards</SectionHeading>
-
+    <Screen
+      title="Flashcards"
+      backTo="/"
+      backLabel="Practise"
+      trailing={queue && !finished
+        ? <Button variant="plain" size="small" onClick={() => setQueue(null)}>End</Button>
+        : undefined}
+    >
       {!queue && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', marginTop: 'var(--space-5)' }}>
-          <PackPicker packs={vocab} selected={selectedPacks} onChange={setSelectedPacks} itemNoun="words" />
+        <>
+          <PackPicker
+            packs={vocab} selected={selectedPacks} onChange={setSelectedPacks}
+            itemNoun="words"
+          />
 
-          <div>
-            <p style={{ font: 'var(--type-label)', color: 'var(--bark)', marginBottom: 'var(--space-2)' }}>Direction</p>
-            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-              <ChoiceChip selected={direction === 'hu-en'} onToggle={() => setDirection('hu-en')}>Hungarian to English</ChoiceChip>
-              <ChoiceChip selected={direction === 'en-hu'} onToggle={() => setDirection('en-hu')}>English to Hungarian</ChoiceChip>
+          <div style={{ marginBottom: 'var(--space-6)' }}>
+            <div style={{ font: 'var(--text-list-header)', color: 'var(--label-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '0 var(--space-4) var(--space-2)' }}>
+              Direction
             </div>
+            <SegmentedControl
+              segments={[
+                { value: 'hu-en', label: 'Hungarian first' },
+                { value: 'en-hu', label: 'English first' },
+              ]}
+              value={direction} onChange={setDirection}
+            />
           </div>
 
-          <div>
-            <p style={{ font: 'var(--type-label)', color: 'var(--bark)', marginBottom: 'var(--space-2)' }}>Cards in this round</p>
-            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-              {ROUND_SIZES.map(n => (
-                <ChoiceChip key={n} selected={roundSize === n} onToggle={() => setRoundSize(n)}>
-                  {n === 0 ? 'Everything (' + pool.length + ')' : n}
-                </ChoiceChip>
-              ))}
+          <div style={{ marginBottom: 'var(--space-7)' }}>
+            <div style={{ font: 'var(--text-list-header)', color: 'var(--label-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '0 var(--space-4) var(--space-2)' }}>
+              Cards in this round
             </div>
+            <SegmentedControl segments={ROUND_SIZES} value={roundSize} onChange={setRoundSize} />
           </div>
 
-          <div>
-            <Button size="lg" onClick={start} disabled={pool.length === 0}>Start round</Button>
-            {pool.length === 0 && (
-              <p style={{ font: 'var(--type-caption)', color: 'var(--bark)', marginTop: 'var(--space-2)' }}>
-                Choose at least one pack, or upload a CSV below.
-              </p>
-            )}
+          <Button block size="large" onClick={start} disabled={pool.length === 0}>
+            Start round
+          </Button>
+          {pool.length === 0 && (
+            <p style={{ font: 'var(--text-footnote)', color: 'var(--label-secondary)', textAlign: 'center', marginTop: 'var(--space-3)' }}>
+              Choose at least one pack, or add a CSV below.
+            </p>
+          )}
+
+          <div style={{ marginTop: 'var(--space-7)' }}>
+            <CsvUpload kind="vocab" label="Add your own words" />
           </div>
-        </div>
+        </>
       )}
 
       {queue && !finished && card && (
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            marginBottom: 'var(--space-3)', font: 'var(--type-caption)', color: 'var(--bark)',
-          }}>
-            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {roundTotal - queue.length + 1} of {roundTotal}, {queue.length} left
-            </span>
-            <Button variant="ghost" size="sm" onClick={() => setQueue(null)}>End round</Button>
+        <>
+          <div style={{ marginBottom: 'var(--space-5)' }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between',
+              font: 'var(--text-footnote)', color: 'var(--label-secondary)',
+              letterSpacing: 'var(--tracking-footnote)', marginBottom: 6,
+              fontVariantNumeric: 'tabular-nums',
+            }}>
+              <span>Card {done + 1} of {roundTotal}</span>
+              <span>{queue.length} left</span>
+            </div>
+            <ProgressBar value={done} max={roundTotal} />
           </div>
 
           <button
             type="button"
             onClick={() => setFlipped(f => !f)}
+            aria-label={flipped ? 'Turn the card back' : 'Turn the card over'}
             style={{
-              width: '100%', minHeight: 260, background: flipped ? 'var(--linen)' : 'var(--white)',
-              border: '1px solid ' + (flipped ? 'var(--border-pale)' : 'var(--border-hairline)'),
-              borderRadius: 'var(--radius-none)', cursor: 'pointer', textAlign: 'center',
-              padding: 'var(--space-7) var(--space-5)', transition: 'var(--transition-ui)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: 'var(--space-4)', font: 'var(--type-body)', color: 'var(--text-body)',
+              width: '100%', border: 'none', background: 'none', padding: 0,
+              cursor: 'pointer', perspective: 1200, display: 'block',
             }}
           >
-            <span style={{ font: 'var(--type-eyebrow)', color: 'var(--bark)' }}>
-              {flipped
-                ? (direction === 'hu-en' ? 'English' : 'Hungarian')
-                : (direction === 'hu-en' ? 'Hungarian' : 'English')}
-            </span>
-            <span aria-live="polite" style={{
-              font: 'var(--weight-medium) var(--size-h4)/var(--leading-snug) var(--font-core)',
-              letterSpacing: 'var(--tracking-lg)',
-            }}>{flipped ? back : front}</span>
-            {flipped && card.example && (
-              <span style={{ font: 'var(--type-small)', color: 'var(--bark)', maxWidth: 'var(--measure-narrow)' }}>
-                {card.example}
-              </span>
-            )}
-            {!flipped && (
-              <span style={{ font: 'var(--type-caption)', color: 'var(--bark)' }}>
-                Click the card or press space to turn it over
-              </span>
-            )}
+            <div style={{
+              position: 'relative', width: '100%', minHeight: 300,
+              transformStyle: 'preserve-3d',
+              transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+              transition: 'transform var(--duration-slow) var(--ease-spring)',
+            }}>
+              <div style={{ ...face, background: 'var(--bg-grouped-secondary)' }}>
+                <span style={{ font: 'var(--text-footnote)', color: 'var(--label-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  {huFirst ? 'Hungarian' : 'English'}
+                </span>
+                <span style={{ font: 'var(--text-title-1)', letterSpacing: 'var(--tracking-title-1)', color: 'var(--label)' }}>
+                  {front}
+                </span>
+                <span style={{ font: 'var(--text-footnote)', color: 'var(--label-tertiary)', marginTop: 'var(--space-2)' }}>
+                  Tap the card, or press space
+                </span>
+              </div>
+              <div style={{
+                ...face, background: 'var(--tint)', color: '#FFFFFF',
+                transform: 'rotateY(180deg)',
+              }}>
+                <span style={{ font: 'var(--text-footnote)', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  {huFirst ? 'English' : 'Hungarian'}
+                </span>
+                <span style={{ font: 'var(--text-title-1)', letterSpacing: 'var(--tracking-title-1)' }}>
+                  {back}
+                </span>
+                {card.example && (
+                  <span style={{ font: 'var(--text-subheadline)', opacity: 0.85, maxWidth: '32ch', letterSpacing: 'var(--tracking-subheadline)' }}>
+                    {card.example}
+                  </span>
+                )}
+              </div>
+            </div>
           </button>
 
-          <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'center' }}>
-            <Button onClick={() => answer(true)} disabled={!flipped}>I knew it</Button>
-            <Button variant="secondary" onClick={() => answer(false)} disabled={!flipped}>Practise again</Button>
-            {card.category && <span style={{ marginLeft: 'auto' }}><Badge tone="neutral">{card.category}</Badge></span>}
+          <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-5)' }}>
+            <Button variant="gray" size="large" style={{ flex: 1 }} onClick={() => answer(false)} disabled={!flipped}>
+              Practise again
+            </Button>
+            <Button size="large" style={{ flex: 1 }} onClick={() => answer(true)} disabled={!flipped}>
+              I knew it
+            </Button>
           </div>
-        </div>
+          {card.category && (
+            <div style={{ textAlign: 'center', marginTop: 'var(--space-4)' }}>
+              <Badge tone="neutral">{card.category}</Badge>
+            </div>
+          )}
+        </>
       )}
 
       {finished && (
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <ScoreSummary
-            score={roundTotal - missed.size}
-            total={roundTotal}
-            onRestart={start}
-            restartLabel="New round"
-          >
-            <p style={{ font: 'var(--type-small)', color: 'var(--bark)' }}>
-              {missed.size === 0
-                ? 'Every card was known first time.'
-                : missed.size + (missed.size === 1 ? ' card needed' : ' cards needed') + ' a second look, and each one came back until you got it.'}
-            </p>
-          </ScoreSummary>
-          <div style={{ marginTop: 'var(--space-3)' }}>
-            <Button variant="ghost" onClick={() => setQueue(null)}>Change packs</Button>
-          </div>
-        </div>
+        <ScoreSummary
+          score={roundTotal - missed.size}
+          total={roundTotal}
+          onRestart={start}
+          restartLabel="New round"
+          secondaryLabel="Change packs"
+          onSecondary={() => setQueue(null)}
+        >
+          <p style={{ font: 'var(--text-subheadline)', color: 'var(--label-secondary)', letterSpacing: 'var(--tracking-subheadline)' }}>
+            {missed.size === 0
+              ? 'Every card was known first time.'
+              : missed.size + (missed.size === 1 ? ' card needed' : ' cards needed') + ' a second look, and each one came back until you got it.'}
+          </p>
+        </ScoreSummary>
       )}
-
-      <CsvUpload kind="vocab" label="Add your own words" />
-    </div>
+    </Screen>
   );
 }

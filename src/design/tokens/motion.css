@@ -1,17 +1,29 @@
-:root{
-  --ease-standard:cubic-bezier(0.2,0,0.2,1);
-  --ease-out:cubic-bezier(0,0,0.2,1);
-  --duration-fast:120ms;
-  --duration-base:180ms;
-  --duration-slow:260ms;
-  --transition-ui:background-color var(--duration-fast) var(--ease-standard),color var(--duration-fast) var(--ease-standard),border-color var(--duration-fast) var(--ease-standard);
+/* Apple motion.
+
+   Two families. Interface transitions use a standard ease that starts and
+   ends calmly. Anything the finger drives, or anything that should feel
+   physical, uses a spring that overshoots slightly and settles.
+
+   Presses respond immediately: a control dips to 96% and comes back. */
+
+:root {
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  --duration-instant: 120ms;
+  --duration-fast: 200ms;
+  --duration-base: 300ms;
+  --duration-slow: 450ms;
+
+  --transition-control: background-color var(--duration-instant) var(--ease-standard), color var(--duration-instant) var(--ease-standard), transform var(--duration-fast) var(--ease-spring), opacity var(--duration-instant) var(--ease-standard);
 }
 
-/* Fades and height reveals only. No bounce, no spring, no parallax. */
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{
-    animation-duration:0.01ms !important;
-    animation-iteration-count:1 !important;
-    transition-duration:0.01ms !important;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

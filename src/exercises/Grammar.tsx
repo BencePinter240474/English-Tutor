@@ -1,8 +1,10 @@
 import React from 'react';
-import { Badge, Button, ChoiceChip, SectionHeading } from '../design/components';
+import { Badge, Button, Card, ProgressBar, SegmentedControl } from '../design/components';
 import { CsvUpload } from '../components/CsvUpload';
 import { PackPicker } from '../components/PackPicker';
 import { ScoreSummary } from '../components/ScoreSummary';
+import { Screen } from '../components/Screen';
+import { AnswerOption } from '../components/AnswerOption';
 import { usePacks } from '../lib/packs';
 import { recordRun } from '../lib/storage';
 import { shuffle } from '../lib/shuffle';
@@ -11,13 +13,14 @@ import type { GrammarItem } from '../lib/types';
 /* Grammar.
 
    One question at a time, marked as soon as an option is chosen, with the
-   explanation shown straight away. Marking at the end would make the learner
-   read twenty explanations in a row, which nobody does.
+   explanation shown straight away. Marking at the end would mean reading
+   twenty explanations in a row, which nobody does. */
 
-   Right and wrong are said in words, not signalled by colour: elho ink is
-   Graphite or white, and status is carried by a badge with a word in it. */
-
-const ROUND_SIZES = [10, 20, 0] as const;
+const ROUND_SIZES = [
+  { value: '10', label: '10' },
+  { value: '20', label: '20' },
+  { value: '0', label: 'All' },
+];
 
 interface Answered {
   item: GrammarItem;
@@ -28,7 +31,7 @@ interface Answered {
 export function Grammar() {
   const { grammar } = usePacks();
   const [selectedPacks, setSelectedPacks] = React.useState<string[]>(() => grammar.map(p => p.id));
-  const [roundSize, setRoundSize] = React.useState<number>(10);
+  const [roundSize, setRoundSize] = React.useState('10');
 
   const [questions, setQuestions] = React.useState<GrammarItem[] | null>(null);
   const [index, setIndex] = React.useState(0);
@@ -49,8 +52,8 @@ export function Grammar() {
   );
 
   const start = React.useCallback(() => {
-    const round = roundSize > 0 ? shuffle(pool).slice(0, roundSize) : shuffle(pool);
-    setQuestions(round);
+    const size = Number(roundSize);
+    setQuestions(size > 0 ? shuffle(pool).slice(0, size) : shuffle(pool));
     setIndex(0);
     setChosen(null);
     setLog([]);
@@ -60,16 +63,15 @@ export function Grammar() {
   const finished = questions != null && index >= questions.length;
 
   // The options are shuffled per question, so the answer is not always third.
-  const options = React.useMemo(
-    () => (current ? shuffle(current.options) : []),
-    [current],
-  );
+  const options = React.useMemo(() => (current ? shuffle(current.options) : []), [current]);
 
   const choose = (option: string) => {
     if (chosen || !current) return;
-    const correct = option.toLowerCase() === current.answer.toLowerCase();
     setChosen(option);
-    setLog(l => [...l, { item: current, chosen: option, correct }]);
+    setLog(l => [...l, {
+      item: current, chosen: option,
+      correct: option.toLowerCase() === current.answer.toLowerCase(),
+    }]);
   };
 
   const next = () => {
@@ -78,155 +80,148 @@ export function Grammar() {
     setChosen(null);
     setIndex(at);
     if (at >= questions.length) {
-      const score = log.filter(a => a.correct).length;
-      recordRun('grammar', score, questions.length);
+      recordRun('grammar', log.filter(a => a.correct).length, questions.length);
     }
   };
 
   const score = log.filter(a => a.correct).length;
+  const right = chosen != null && current != null
+    && chosen.toLowerCase() === current.answer.toLowerCase();
 
   // The gap is written as ___ in the CSV. Draw it as a rule, not as letters.
-  const renderPrompt = (text: string) => {
-    const parts = text.split('___');
-    return parts.map((part, i) => (
-      <React.Fragment key={i}>
-        {part}
-        {i < parts.length - 1 && (
-          <span style={{
-            display: 'inline-block', minWidth: 72, borderBottom: '2px solid var(--leaf)',
-            verticalAlign: 'baseline', margin: '0 4px',
-          }} />
-        )}
-      </React.Fragment>
-    ));
-  };
+  const renderPrompt = (text: string) => text.split('___').map((part, i, all) => (
+    <React.Fragment key={i}>
+      {part}
+      {i < all.length - 1 && (
+        <span style={{
+          display: 'inline-block', minWidth: 64,
+          borderBottom: '3px solid var(--tint)', margin: '0 6px',
+          verticalAlign: 'baseline',
+        }} />
+      )}
+    </React.Fragment>
+  ));
 
   return (
-    <div>
-      <SectionHeading
-        eyebrow="Grammar"
-        note="Multiple choice, marked as you go, with a short explanation after every answer."
-      >Grammar exercises</SectionHeading>
-
+    <Screen
+      title="Grammar"
+      backTo="/"
+      backLabel="Practise"
+      trailing={questions && !finished
+        ? <Button variant="plain" size="small" onClick={() => setQuestions(null)}>End</Button>
+        : undefined}
+    >
       {!questions && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', marginTop: 'var(--space-5)' }}>
-          <PackPicker packs={grammar} selected={selectedPacks} onChange={setSelectedPacks} itemNoun="questions" />
-          <div>
-            <p style={{ font: 'var(--type-label)', color: 'var(--bark)', marginBottom: 'var(--space-2)' }}>Questions in this round</p>
-            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-              {ROUND_SIZES.map(n => (
-                <ChoiceChip key={n} selected={roundSize === n} onToggle={() => setRoundSize(n)}>
-                  {n === 0 ? 'Everything (' + pool.length + ')' : n}
-                </ChoiceChip>
-              ))}
+        <>
+          <PackPicker
+            packs={grammar} selected={selectedPacks} onChange={setSelectedPacks}
+            itemNoun="questions"
+          />
+          <div style={{ marginBottom: 'var(--space-7)' }}>
+            <div style={{ font: 'var(--text-list-header)', color: 'var(--label-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '0 var(--space-4) var(--space-2)' }}>
+              Questions in this round
             </div>
+            <SegmentedControl segments={ROUND_SIZES} value={roundSize} onChange={setRoundSize} />
           </div>
-          <div>
-            <Button size="lg" onClick={start} disabled={pool.length === 0}>Start round</Button>
-            {pool.length === 0 && (
-              <p style={{ font: 'var(--type-caption)', color: 'var(--bark)', marginTop: 'var(--space-2)' }}>
-                Choose at least one pack, or upload a CSV below.
-              </p>
-            )}
+          <Button block size="large" onClick={start} disabled={pool.length === 0}>Start round</Button>
+          {pool.length === 0 && (
+            <p style={{ font: 'var(--text-footnote)', color: 'var(--label-secondary)', textAlign: 'center', marginTop: 'var(--space-3)' }}>
+              Choose at least one pack, or add a CSV below.
+            </p>
+          )}
+          <div style={{ marginTop: 'var(--space-7)' }}>
+            <CsvUpload kind="grammar" label="Add your own questions" />
           </div>
-        </div>
+        </>
       )}
 
       {current && (
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            marginBottom: 'var(--space-4)', font: 'var(--type-caption)', color: 'var(--bark)',
-          }}>
-            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-              Question {index + 1} of {questions!.length}, {score} right so far
-            </span>
-            <Button variant="ghost" size="sm" onClick={() => setQuestions(null)}>End round</Button>
-          </div>
-
-          {current.topic && <div style={{ marginBottom: 'var(--space-3)' }}><Badge tone="neutral">{current.topic}</Badge></div>}
-
-          <p style={{
-            font: 'var(--weight-medium) var(--size-h4)/var(--leading-snug) var(--font-core)',
-            letterSpacing: 'var(--tracking-lg)', maxWidth: 'var(--measure-prose)',
-            marginBottom: 'var(--space-5)',
-          }}>{renderPrompt(current.prompt)}</p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', maxWidth: 520 }}>
-            {options.map(option => {
-              const isAnswer = option.toLowerCase() === current.answer.toLowerCase();
-              const isChosen = chosen === option;
-              // After marking, the correct option is shown selected whatever
-              // was picked, so the right form is always the one on Leaf.
-              return (
-                <ChoiceChip
-                  key={option}
-                  selected={chosen ? isAnswer : false}
-                  onToggle={() => choose(option)}
-                  style={{ ...(chosen ? { cursor: 'default' } : null), ...(chosen && isAnswer ? { background: 'var(--leaf)', color: 'var(--white)' } : null), ...(chosen && isChosen && !isAnswer
-                    ? { border: '2px solid var(--graphite)', background: 'var(--linen)', color: 'var(--graphite)' }
-                    : null) }}
-                >
-                  {option}
-                  {chosen && isChosen && !isAnswer && (
-                    <span style={{ font: 'var(--type-caption)', color: 'var(--bark)', marginLeft: 8 }}>your answer</span>
-                  )}
-                </ChoiceChip>
-              );
-            })}
-          </div>
-
-          {chosen && (
+        <>
+          <div style={{ marginBottom: 'var(--space-5)' }}>
             <div style={{
-              marginTop: 'var(--space-5)', padding: 'var(--space-4)',
-              borderLeft: 'var(--border-width-accent) solid ' + (chosen.toLowerCase() === current.answer.toLowerCase() ? 'var(--leaf)' : 'var(--graphite)'),
-              background: 'var(--surface-pale)', maxWidth: 'var(--measure-prose)',
+              display: 'flex', justifyContent: 'space-between',
+              font: 'var(--text-footnote)', color: 'var(--label-secondary)',
+              letterSpacing: 'var(--tracking-footnote)', marginBottom: 6,
+              fontVariantNumeric: 'tabular-nums',
             }}>
-              <Badge tone={chosen.toLowerCase() === current.answer.toLowerCase() ? 'positive' : 'negative'}>
-                {chosen.toLowerCase() === current.answer.toLowerCase() ? 'Correct' : 'Not this time'}
-              </Badge>
-              <p style={{ font: 'var(--type-small)', marginTop: 'var(--space-3)' }}>
-                {current.explanation ?? ('The answer is "' + current.answer + '".')}
-              </p>
+              <span>Question {index + 1} of {questions!.length}</span>
+              <span>{score} right</span>
+            </div>
+            <ProgressBar value={index} max={questions!.length} />
+          </div>
+
+          {current.topic && (
+            <div style={{ marginBottom: 'var(--space-3)' }}>
+              <Badge tone="info">{current.topic}</Badge>
             </div>
           )}
 
-          <div style={{ marginTop: 'var(--space-5)' }}>
-            <Button onClick={next} disabled={!chosen}>
+          <h2 style={{
+            font: 'var(--text-title-2)', letterSpacing: 'var(--tracking-title-2)',
+            color: 'var(--label)', marginBottom: 'var(--space-6)',
+          }}>{renderPrompt(current.prompt)}</h2>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            {options.map(option => (
+              <AnswerOption
+                key={option} option={option} chosen={chosen}
+                answer={current.answer} onChoose={choose}
+              />
+            ))}
+          </div>
+
+          {chosen && (
+            <Card padding="regular" style={{ marginTop: 'var(--space-5)' }}>
+              <Badge tone={right ? 'positive' : 'negative'} solid>
+                {right ? 'Correct' : 'Not this time'}
+              </Badge>
+              <p style={{ font: 'var(--text-subheadline)', marginTop: 'var(--space-3)', letterSpacing: 'var(--tracking-subheadline)' }}>
+                {current.explanation ?? 'The answer is "' + current.answer + '".'}
+              </p>
+            </Card>
+          )}
+
+          <div style={{ marginTop: 'var(--space-6)' }}>
+            <Button block size="large" onClick={next} disabled={!chosen}>
               {index + 1 >= questions!.length ? 'See the result' : 'Next question'}
             </Button>
           </div>
-        </div>
+        </>
       )}
 
       {finished && (
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <ScoreSummary score={score} total={questions!.length} onRestart={start} restartLabel="New round">
-            {log.some(a => !a.correct) && (
-              <div>
-                <p style={{ font: 'var(--type-label)', color: 'var(--bark)', marginBottom: 'var(--space-3)' }}>
-                  Worth another look
-                </p>
-                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  {log.filter(a => !a.correct).map((a, i) => (
-                    <li key={i} style={{ borderTop: '1px solid var(--border-hairline)', paddingTop: 'var(--space-3)' }}>
-                      <p style={{ font: 'var(--type-small)' }}>{a.item.prompt.replace('___', '_____')}</p>
-                      <p style={{ font: 'var(--type-caption)', color: 'var(--bark)', marginTop: 'var(--space-1)' }}>
-                        You chose "{a.chosen}". The answer is "{a.item.answer}".
-                      </p>
-                    </li>
-                  ))}
-                </ul>
+        <ScoreSummary
+          score={score}
+          total={questions!.length}
+          onRestart={start}
+          restartLabel="New round"
+          secondaryLabel="Change packs"
+          onSecondary={() => setQuestions(null)}
+        >
+          {log.some(a => !a.correct) && (
+            <>
+              <div style={{ font: 'var(--text-list-header)', color: 'var(--label-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 'var(--space-3)' }}>
+                Worth another look
               </div>
-            )}
-          </ScoreSummary>
-          <div style={{ marginTop: 'var(--space-3)' }}>
-            <Button variant="ghost" onClick={() => setQuestions(null)}>Change packs</Button>
-          </div>
-        </div>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                {log.filter(a => !a.correct).map((a, i) => (
+                  <li key={i} style={{
+                    padding: 'var(--space-3)', borderRadius: 'var(--radius-control)',
+                    background: 'var(--fill-quaternary)',
+                  }}>
+                    <p style={{ font: 'var(--text-subheadline)', letterSpacing: 'var(--tracking-subheadline)' }}>
+                      {a.item.prompt.replace('___', '_____')}
+                    </p>
+                    <p style={{ font: 'var(--text-footnote)', color: 'var(--label-secondary)', marginTop: 4, letterSpacing: 'var(--tracking-footnote)' }}>
+                      You chose "{a.chosen}". The answer is "{a.item.answer}".
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </ScoreSummary>
       )}
-
-      <CsvUpload kind="grammar" label="Add your own questions" />
-    </div>
+    </Screen>
   );
 }

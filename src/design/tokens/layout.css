@@ -1,0 +1,36 @@
+/* The 4pt grid, and the corner radii that go with it. */
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 44px;
+  --space-9: 64px;
+
+  /* Radii. Apple rounds generously and consistently: a control and the card
+     it sits in are never a near-miss apart. */
+  --radius-small: 8px;
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-large: 20px;
+  --radius-capsule: 999px;
+
+  /* 44pt is the minimum comfortable target, and the height of a list row. */
+  --tap-target: 44px;
+  --row-height: 44px;
+
+  --bar-height: 48px;
+  --tab-bar-height: 56px;
+
+  /* Screens are inset 16pt from the edge, and content is capped so a wide
+     window reads as an iPad layout rather than a stretched phone one. */
+  --screen-inset: 16px;
+  --content-width: 700px;
+  --reading-width: 62ch;
+
+  --hairline: 0.5px;
+}

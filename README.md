@@ -92,38 +92,45 @@ only the first row of a passage needs to carry `passage_text`.
 
 ## The design system
 
-The interface is built with the **elho design system**, internal mode, pulled
-from the elho Design System project on claude.ai/design.
+The interface is built on an **Apple Human Interface Guidelines** design
+system, written for this project and living in `src/design/`.
 
-- `src/design/tokens/` the colour, type, spacing, elevation and motion tokens,
-  copied as they are.
-- `src/design/components/` the components used here, converted from the
-  project's `.jsx` sources to typed `.tsx`. Divergences from the source are
-  noted in the file that makes them.
+- `src/design/tokens/` the system colour palette with its semantic names, the
+  eleven iOS text styles, the 4pt grid and its radii, and the motion curves.
+- `src/design/components/` the controls: buttons, inset grouped lists, the
+  navigation bar, tab bar, segmented control, badges, fields and progress.
 
-The rules that shape the look: internal mode uses seven of the thirteen brand
-colours (White, Linen, Graphite, Leaf, Lime, Pebble, Bark); text is Graphite or
-white and never coloured, so right and wrong are said in words in a badge
-rather than signalled in red and green; containers are square and flat, and a
-9px corner marks something interactive; emphasis moves up the value ladder
-Graphite, Leaf, Pebble, Lime rather than changing hue.
+What that means in practice: the app is a three tab iOS app. Practise lists
+the exercises, Library holds the packs and uploads, Progress holds the scores.
+Screens are inset grouped lists on a grey ground. The navigation bar and tab
+bar are materials that blur what scrolls under them. Controls dip to 96% on
+press and return on a spring, and the flashcard turns over in three
+dimensions.
 
-### The typeface is not shipped
+**Light and dark are one definition.** Every colour is a semantic token, so
+the dark appearance is a token swap and no component knows which one is
+showing. It follows the device by default, and Library has an Appearance
+control to pin one.
 
-The brand face is Cina GEO. The cuts held in the design system project are the
-free `CinaGEOTest` trial files, licensed for personal use only, so publishing
-them with a public site would breach that licence. They are deliberately absent
-and the fallback stack carries the type instead. See `public/fonts/README.md`
-for how to switch the real face on once the Public Type licence is bought.
+### Nothing proprietary is redistributed
+
+- **San Francisco** is referenced through the system font stack
+  (`-apple-system`, `BlinkMacSystemFont`, `SF Pro Text`). On a Mac, iPhone or
+  iPad that resolves to the real face; everywhere else it falls back to the
+  host's own UI font. No font files are shipped, because SF is licensed for
+  use on Apple platforms.
+- **SF Symbols** are likewise licensed for Apple platforms, so `Icon.tsx` is a
+  small hand-drawn set in the same idiom: a 24 grid, rounded caps and joins,
+  uniform stroke. Swap it for a licensed set if this ever runs natively.
 
 ## Layout
 
 ```
 src/
   content/     starter packs, as CSV files in the upload format
-  design/      the elho design system, tokens and components
+  design/      the Apple design system, tokens and components
   lib/         CSV reading, pack storage, templates
-  components/  app shell, upload panel, shared pieces
+  components/  app shell, screen frame, upload panel, shared pieces
   exercises/   Flashcards, Matching, Grammar, Reading
-  pages/       Home, Your packs
+  pages/       Practise, Library, Progress
 ```

@@ -1,27 +1,34 @@
 import React from 'react';
 
-/* Brand guide p45: ink is Graphite or white only. The accent is the ground,
-   picked so the ink clears contrast, and the word carries the meaning. */
+/* A small status marker. Apple leans on colour here more than on shape, so
+   a badge is a tinted capsule with the system colour that matches the
+   meaning: green for a pass, red for a miss, grey for neutral. */
 
-type Tone = 'positive' | 'caution' | 'negative' | 'neutral';
+type Tone = 'positive' | 'negative' | 'neutral' | 'info';
 
-const tones: Record<Tone, React.CSSProperties> = {
-  positive: { color: 'var(--status-positive-ink)', background: 'var(--status-positive)' },
-  caution: { color: 'var(--status-caution-ink)', background: 'var(--status-caution)' },
-  negative: { color: 'var(--status-negative-ink)', background: 'var(--status-negative)' },
-  neutral: { color: 'var(--status-neutral-ink)', background: 'var(--status-neutral)' },
+const TONES: Record<Tone, { fill: string; ink: string }> = {
+  positive: { fill: 'var(--green)', ink: 'var(--green)' },
+  negative: { fill: 'var(--red)', ink: 'var(--red)' },
+  neutral: { fill: 'var(--gray)', ink: 'var(--label-secondary)' },
+  info: { fill: 'var(--blue)', ink: 'var(--blue)' },
 };
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   tone?: Tone;
+  /** Solid fills the capsule with the colour and uses white ink. */
+  solid?: boolean;
 }
 
-export function Badge({ tone = 'neutral', children, style, ...rest }: BadgeProps) {
+export function Badge({ tone = 'neutral', solid = false, children, style, ...rest }: BadgeProps) {
+  const { fill, ink } = TONES[tone];
   return (
     <span
       style={{
-        font: 'var(--type-caption)', fontWeight: 'var(--weight-medium)', ...tones[tone],
-        padding: '3px 10px', borderRadius: 'var(--radius-pill)', display: 'inline-block',
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        padding: '3px 9px', borderRadius: 'var(--radius-capsule)',
+        font: 'var(--text-caption-1)', fontWeight: 600,
+        background: solid ? fill : `color-mix(in srgb, ${fill} 15%, transparent)`,
+        color: solid ? '#FFFFFF' : ink,
         whiteSpace: 'nowrap', ...style,
       }}
       {...rest}

@@ -1,11 +1,42 @@
-html{-webkit-font-smoothing:antialiased}
-body{margin:0;font:var(--type-body);color:var(--text-body);background:var(--surface-page)}
-h1,h2,h3,h4,h5,h6{margin:0;font-weight:var(--weight-medium);color:var(--text-heading);text-wrap:balance}
-p{margin:0;text-wrap:pretty}
-/* Ink is Graphite or white only (p45), so a link is signalled by its underline,
-   not by colour. The Leaf underline is a rule, not type. */
-a{color:var(--text-link);text-decoration:underline;text-decoration-color:var(--leaf);text-decoration-thickness:1px;text-underline-offset:3px;transition:var(--transition-ui)}
-a:hover{color:var(--text-link-hover);text-decoration-thickness:2px}
-:focus-visible{outline:none;box-shadow:var(--focus-ring)}
-*,*::before,*::after{box-sizing:border-box}
-button,input,select,textarea{font-family:inherit}
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Stops iOS Safari inflating text in landscape. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font: var(--text-body);
+  letter-spacing: var(--tracking-body);
+  color: var(--label);
+  background: var(--bg-grouped);
+  /* A tap should not flash a grey box, and a double tap should not zoom. */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: inherit; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; }
+
+button, input, select, textarea {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+a { color: var(--tint); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* The focus ring is the tint at two steps out, which reads on both
+   appearances without needing a light and a dark variant. */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--tint) 35%, transparent);
+  border-radius: var(--radius-small);
+}
+
+::selection { background: color-mix(in srgb, var(--tint) 25%, transparent); }
