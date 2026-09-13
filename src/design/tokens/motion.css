@@ -1,0 +1,17 @@
+:root{
+  --ease-standard:cubic-bezier(0.2,0,0.2,1);
+  --ease-out:cubic-bezier(0,0,0.2,1);
+  --duration-fast:120ms;
+  --duration-base:180ms;
+  --duration-slow:260ms;
+  --transition-ui:background-color var(--duration-fast) var(--ease-standard),color var(--duration-fast) var(--ease-standard),border-color var(--duration-fast) var(--ease-standard);
+}
+
+/* Fades and height reveals only. No bounce, no spring, no parallax. */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:0.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:0.01ms !important;
+  }
+}

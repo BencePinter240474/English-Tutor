@@ -1,0 +1,24 @@
+hungarian,english,example,category
+repülőtér,airport,We reached the airport an hour early.,travel
+pályaudvar,railway station,The railway station is ten minutes away.,travel
+vonat,train,The train leaves at half past six.,travel
+jegy,ticket,Keep your ticket until the end of the journey.,travel
+menetrend,timetable,Check the timetable before you leave.,travel
+késés,delay,There is a twenty minute delay.,travel
+csomag,luggage,My luggage did not arrive.,travel
+szállás,accommodation,The accommodation includes breakfast.,travel
+szoba,room,We booked a room with a view.,travel
+foglalás,booking,I have a booking under Pinter.,travel
+érkezés,arrival,Arrival is scheduled for nine.,travel
+indulás,departure,Departure was put back an hour.,travel
+útlevél,passport,Your passport expires next year.,travel
+határ,border,We crossed the border at night.,travel
+térkép,map,The map is out of date.,travel
+irány,direction,We went in the wrong direction.,travel
+egyenesen,straight on,Go straight on at the lights.,directions
+balra,left,Turn left after the bridge.,directions
+jobbra,right,The chemist is on the right.,directions
+sarok,corner,The cafe is on the corner.,directions
+eltévedni,to get lost,We got lost twice.,travel
+lekésni,to miss,I missed the last bus.,travel
+átszállni,to change,You change trains at Utrecht.,travel

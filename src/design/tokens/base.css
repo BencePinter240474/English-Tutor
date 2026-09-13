@@ -1,0 +1,11 @@
+html{-webkit-font-smoothing:antialiased}
+body{margin:0;font:var(--type-body);color:var(--text-body);background:var(--surface-page)}
+h1,h2,h3,h4,h5,h6{margin:0;font-weight:var(--weight-medium);color:var(--text-heading);text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+/* Ink is Graphite or white only (p45), so a link is signalled by its underline,
+   not by colour. The Leaf underline is a rule, not type. */
+a{color:var(--text-link);text-decoration:underline;text-decoration-color:var(--leaf);text-decoration-thickness:1px;text-underline-offset:3px;transition:var(--transition-ui)}
+a:hover{color:var(--text-link-hover);text-decoration-thickness:2px}
+:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+*,*::before,*::after{box-sizing:border-box}
+button,input,select,textarea{font-family:inherit}

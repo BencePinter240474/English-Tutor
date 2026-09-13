@@ -1,0 +1,82 @@
+/* elho palette, brand guide pp42-47. THIRTEEN colours: three primary plus ten
+   accents. Nothing outside this list is a brand colour.
+
+   Copied from the elho Design System project (tokens/colors.css). Internal
+   mode only, which is what an internal app like this one uses. */
+
+:root{
+  /* Primary palette (p42). Graphite replaces pure black on screen. */
+  --white:#FFFFFF;
+  --linen:#F0ECDF;
+  --graphite:#312D2B;
+  --black:#000000;
+
+  /* Accent palette (p43). Ten curated colours. */
+  --bark:#5C514A;
+  --rose:#E1C8BA;
+  --leaf:#657500;
+  --lime:#ECF2C9;
+  --terra:#D64712;
+  --sunflower:#F3C44E;
+  --aubergine:#5A3E58;
+  --lilac:#D7CAE2;
+  --water:#0F538A;
+  --pebble:#8EAAA3;
+
+  /* Internal mode uses SEVEN of the thirteen: White, Linen, Graphite, Leaf,
+     Lime, Pebble, Bark. Rose, Terra, Sunflower, Aubergine, Lilac and Water are
+     marketing-only and must not appear in this app.
+
+     Emphasis is carried by VALUE, not hue, on a four-step ladder:
+     Graphite, Leaf, Pebble, Lime. Text is Graphite or white only. */
+
+  --text-body:var(--graphite);
+  --text-heading:var(--graphite);
+  --text-muted:var(--bark);
+  --text-on-dark:var(--white);
+  --text-link:var(--graphite);
+  --text-link-hover:var(--graphite);
+  --text-stat:var(--graphite);
+  --text-error:var(--graphite);
+  --text-print:var(--black);
+
+  --surface-page:var(--white);
+  --surface-card:var(--white);
+  --surface-pale:var(--linen);
+  --surface-sunken:var(--linen);
+  --surface-band:var(--linen);
+  --surface-field:var(--linen);
+  --surface-field-focus:var(--lime);
+  --surface-header:var(--graphite);
+  --surface-inverse:var(--graphite);
+
+  /* The palette has no tint ramps, so hover and press step to Graphite. */
+  --fill-action:var(--leaf);
+  --fill-action-hover:var(--graphite);
+  --fill-action-ink:var(--white);
+  --fill-emphasis:var(--pebble);
+  --fill-emphasis-ink:var(--graphite);
+
+  --border-hairline:var(--linen);
+  --border-strong:var(--pebble);
+  --border-pale:var(--pebble);
+  --border-accent:var(--leaf);
+  --rule-heading:var(--leaf);
+
+  /* Status, ranked by value rather than hue. The WORD carries the meaning:
+     a badge says "Correct" or "Not yet", never relies on being green or red. */
+  --status-positive:var(--leaf);
+  --status-positive-ink:var(--white);
+  --status-positive-bg:var(--lime);
+  --status-caution:var(--bark);
+  --status-caution-ink:var(--graphite);
+  --status-caution-bg:var(--linen);
+  --status-negative:var(--graphite);
+  --status-negative-ink:var(--white);
+  --status-negative-bg:var(--linen);
+  --status-neutral:var(--pebble);
+  --status-neutral-ink:var(--graphite);
+  --status-neutral-bg:var(--linen);
+  --status-info:var(--lime);
+  --status-info-ink:var(--graphite);
+}

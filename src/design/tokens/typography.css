@@ -1,0 +1,44 @@
+/* Type, brand guide pp49-55. One family, three weights, one ladder.
+   The ladder is the 'perfect fifth' scale on p50. No size outside it. */
+
+:root{
+  --size-display:184px;
+  --size-h1:120px;
+  --size-h2:80px;
+  --size-h3:56px;
+  --size-h4:32px;
+  --size-h5:24px;
+  --size-h6:18px;
+  --size-body:16px;
+  --size-small:12px;
+
+  --leading-display:0.9;
+  --leading-tight:1;
+  --leading-snug:1.1;
+  --leading-normal:1.2;
+  --leading-body:1.4;
+  --leading-loose:1.4;
+
+  --tracking-display:-0.04em;
+  --tracking-xl:-0.03em;
+  --tracking-lg:-0.02em;
+  --tracking-sm:-0.01em;
+  --tracking-none:0;
+
+  /* Three weights, and only three. */
+  --weight-regular:400;
+  --weight-medium:500;
+  --weight-semibold:600;
+
+  --type-doc-title:var(--weight-medium) var(--size-h2)/var(--leading-display) var(--font-core);
+  --type-h1:var(--weight-medium) var(--size-h3)/var(--leading-tight) var(--font-core);
+  --type-h2:var(--weight-medium) var(--size-h4)/var(--leading-snug) var(--font-core);
+  --type-h3:var(--weight-medium) var(--size-h5)/var(--leading-normal) var(--font-core);
+  --type-h4:var(--weight-medium) var(--size-h6)/var(--leading-normal) var(--font-core);
+  --type-body:var(--weight-regular) var(--size-body)/var(--leading-body) var(--font-core);
+  --type-small:var(--weight-regular) var(--size-body)/var(--leading-body) var(--font-core);
+  --type-caption:var(--weight-regular) var(--size-small)/var(--leading-body) var(--font-core);
+  --type-label:var(--weight-medium) var(--size-small)/var(--leading-normal) var(--font-core);
+  --type-eyebrow:var(--weight-medium) var(--size-small)/var(--leading-normal) var(--font-core);
+  --type-mono:var(--weight-regular) var(--size-body)/var(--leading-normal) var(--font-mono);
+}
